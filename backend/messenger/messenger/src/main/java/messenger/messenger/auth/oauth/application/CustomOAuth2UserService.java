@@ -14,10 +14,6 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
-import java.net.http.HttpHeaders;
-import java.net.http.HttpRequest;
-
 @Slf4j
 @Service
 public class CustomOAuth2UserService extends AbstractOAuth2UserService implements
@@ -36,15 +32,8 @@ public class CustomOAuth2UserService extends AbstractOAuth2UserService implement
 
         ProviderUser providerUser = super.providerUser(clientRegistration, oAuth2User);
 
-        log.info("social getEmail = {}", providerUser.getEmail());
-        log.info("social getOAuth2User = {}", providerUser.getOAuth2User());
-        log.info("social getAuthorities = {}", providerUser.getAuthorities());
-        log.info("social getPassword = {}", providerUser.getPassword());
-
         selfCertificate(providerUser);
         super.register(providerUser, userRequest);
-
-        log.info("userRequest.getAccessToken() = {}", userRequest.getAccessToken());
 
         return new PrincipalUser(providerUser);
 

@@ -1,14 +1,11 @@
-package messenger.messenger.auth.securityconfig;
+package messenger.messenger.common.config;
 
 import lombok.RequiredArgsConstructor;
 import messenger.messenger.auth.oauth.application.CustomOAuth2UserService;
 import messenger.messenger.auth.oauth.application.CustomOidcUserService;
-import messenger.messenger.auth.token.domain.TokenProvider;
-import messenger.messenger.auth.token.infra.config.JwtSecurityConfig;
+import messenger.messenger.auth.token.domain.TokenProviderImpl;
 import messenger.messenger.auth.token.presentation.handler.JwtAccessDeniedHandler;
 import messenger.messenger.auth.token.presentation.handler.JwtAuthenticationEntryPoint;
-import messenger.messenger.auth.token.presentation.handler.Test2handler;
-import messenger.messenger.auth.token.presentation.handler.TestHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,7 +14,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.CorsFilter;
 
@@ -27,7 +23,7 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomOidcUserService customOidcUserService;
-    private final TokenProvider tokenProvider;
+    private final TokenProviderImpl tokenProviderImpl;
     private final CorsFilter corsFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
@@ -42,13 +38,13 @@ public class SecurityConfig {
     }
 
 //    @Bean
-//    JwtAuthenticationFilter jwtAuthenticationFilter(TokenProvider jwtProvider) {
+//    JwtAuthenticationFilter jwtAuthenticationFilter(TokenProviderImpl jwtProvider) {
 //        return new JwtAuthenticationFilter(jwtProvider);
 //    }
 
     @Bean
     SecurityFilterChain oauth2SecurityFilterChain(HttpSecurity http,
-                                                  TokenProvider tokenProvider) throws Exception {
+                                                  TokenProviderImpl tokenProviderImpl) throws Exception {
 
         http
                 .httpBasic().disable()
@@ -58,7 +54,7 @@ public class SecurityConfig {
                 .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
                 //
 
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER)
 
                 .and()
                 .headers()
@@ -76,7 +72,7 @@ public class SecurityConfig {
                         .userService(customOAuth2UserService)
                         .oidcUserService(customOidcUserService)))
 
-                .apply(new JwtSecurityConfig(tokenProvider));
+                .apply(new JwtSecurityConfig(tokenProviderImpl));
 //                .addFilterBefore(jwtAuthenticationFilter(tokenProvider),
 //                        UsernamePasswordAuthenticationFilter.class);
 

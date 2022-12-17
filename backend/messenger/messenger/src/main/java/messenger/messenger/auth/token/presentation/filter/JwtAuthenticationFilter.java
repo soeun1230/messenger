@@ -2,7 +2,7 @@ package messenger.messenger.auth.token.presentation.filter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import messenger.messenger.auth.token.domain.TokenProvider;
+import messenger.messenger.auth.token.domain.TokenProviderImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -19,7 +19,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends GenericFilterBean {
 
-    private final TokenProvider tokenProvider;
+    private final TokenProviderImpl tokenProviderImpl;
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -27,8 +27,8 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 
         log.info("token = {}", token);
 
-        if (token != null && tokenProvider.validateToken(token)) {
-            Authentication authentication = tokenProvider.getAuthentication(token);
+        if (token != null && tokenProviderImpl.validateToken(token)) {
+            Authentication authentication = tokenProviderImpl.getAuthentication(token);
 
             log.info("authentication jwtAuthenticationFiler = {}", authentication);
 
