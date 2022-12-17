@@ -1,9 +1,10 @@
 package messenger.messenger.auth.token.presentation.filter;
 
 import lombok.extern.slf4j.Slf4j;
-import messenger.messenger.auth.token.domain.TokenProvider;
+import messenger.messenger.auth.token.domain.TokenProviderImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -15,12 +16,13 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 @Slf4j
+@Component
 public class JwtFilter extends GenericFilterBean {
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
-    private TokenProvider tokenProvider;
-    public JwtFilter(TokenProvider tokenProvider) {
-        this.tokenProvider = tokenProvider;
+    private TokenProviderImpl tokenProviderImpl;
+    public JwtFilter(TokenProviderImpl tokenProviderImpl) {
+        this.tokenProviderImpl = tokenProviderImpl;
     }
 
     @Override
@@ -39,8 +41,8 @@ public class JwtFilter extends GenericFilterBean {
 
         log.info("jwt = {}", jwt);
 
-        if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-            Authentication authentication = tokenProvider.getAuthentication(jwt);
+        if (StringUtils.hasText(jwt) && tokenProviderImpl.validateToken(jwt)) {
+            Authentication authentication = tokenProviderImpl.getAuthentication(jwt);
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             log.info("authentication.getName() = {}", authentication.getName());

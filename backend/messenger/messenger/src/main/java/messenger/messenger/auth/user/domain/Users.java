@@ -1,5 +1,6 @@
 package messenger.messenger.auth.user.domain;
 
+import io.jsonwebtoken.Jwts;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +11,9 @@ import messenger.messenger.business.music.domain.Music;
 
 import javax.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static javax.persistence.FetchType.LAZY;
@@ -50,14 +53,18 @@ public class Users extends BaseEntity {
     private String email;
     private String picture;
 
+    private String refreshToken;
+
+
     @Builder
     public Users(String password, String registrationId, String registerId,
-                 String email, String picture) {
+                 String email, String picture, String refreshToken) {
         this.password = password;
         this.registrationId = registrationId;
         this.registerId = registerId;
         this.email = email;
         this.picture = picture;
+        this.refreshToken = refreshToken;
     }
 
     public void addAuthorities(Authority authority) {

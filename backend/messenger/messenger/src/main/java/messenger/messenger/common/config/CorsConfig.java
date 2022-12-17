@@ -1,4 +1,4 @@
-package messenger.messenger.auth.securityconfig;
+package messenger.messenger.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
