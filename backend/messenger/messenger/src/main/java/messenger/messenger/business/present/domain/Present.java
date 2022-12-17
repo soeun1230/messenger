@@ -3,11 +3,10 @@ package messenger.messenger.business.present.domain;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Value;
 import messenger.messenger.business.chatroom.domain.Chatroom;
 import messenger.messenger.business.common.BaseEntity;
 import messenger.messenger.business.item.domain.Item;
-import messenger.messenger.business.user.domain.Users;
+import messenger.messenger.auth.user.domain.Users;
 
 import javax.persistence.*;
 
