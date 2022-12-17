@@ -4,11 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import messenger.messenger.business.common.BaseEntity;
-import messenger.messenger.business.user.domain.Users;
+import messenger.messenger.auth.user.domain.Users;
 
 import javax.persistence.*;
-
-import java.io.File;
 
 import static javax.persistence.FetchType.LAZY;
 

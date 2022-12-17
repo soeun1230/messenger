@@ -2,8 +2,7 @@ spring:
   profiles:
     include:
       - oauth
-      - resource
-      - errors
+      - jwt
   h2:
     console:
       enabled: true
@@ -45,4 +44,3 @@ logging:
 multipart:
   maxFileSize: 5MB
   maxRequestSize: 5MB
-
