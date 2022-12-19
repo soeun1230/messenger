@@ -1,5 +1,6 @@
 package messenger.messenger.auth.token.presentation.controller;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messenger.messenger.auth.oauth.domain.PrincipalUser;
@@ -13,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -63,6 +65,22 @@ public class TokenController {
         return "redirect:/login";
 
     }
+
+
+    @GetMapping("/token")
+    public ResponseEntity getToken(@RequestBody NameDto nameDto) {
+
+        log.info("nameDto = {}", nameDto.getName());
+
+        return new ResponseEntity(HttpStatus.OK);
+
+    }
+
+    @Data
+    static class NameDto {
+        private String name;
+    }
+
 
 
 }

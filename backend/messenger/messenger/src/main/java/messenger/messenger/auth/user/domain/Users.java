@@ -53,9 +53,6 @@ public class Users extends BaseEntity {
     private String email;
     private String picture;
 
-    private String refreshToken;
-
-
     @Builder
     public Users(String password, String registrationId, String registerId,
                  String email, String picture, String refreshToken) {
@@ -64,7 +61,6 @@ public class Users extends BaseEntity {
         this.registerId = registerId;
         this.email = email;
         this.picture = picture;
-        this.refreshToken = refreshToken;
     }
 
     public void addAuthorities(Authority authority) {

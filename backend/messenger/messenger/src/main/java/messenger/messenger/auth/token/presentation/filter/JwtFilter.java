@@ -5,6 +5,7 @@ import messenger.messenger.auth.token.domain.TokenProviderImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.PatternMatchUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -20,6 +21,9 @@ import java.io.IOException;
 public class JwtFilter extends GenericFilterBean {
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
+
+    private static final String[] whitelist = {"/", "/login", "/logout", "/favicon.ico", "/static/**"};
+
     private TokenProviderImpl tokenProviderImpl;
     public JwtFilter(TokenProviderImpl tokenProviderImpl) {
         this.tokenProviderImpl = tokenProviderImpl;
@@ -41,15 +45,20 @@ public class JwtFilter extends GenericFilterBean {
 
         log.info("jwt = {}", jwt);
 
-        if (StringUtils.hasText(jwt) && tokenProviderImpl.validateToken(jwt)) {
-            Authentication authentication = tokenProviderImpl.getAuthentication(jwt);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (isLoginCheckPath(requestURI)) {
 
-            log.info("authentication.getName() = {}", authentication.getName());
-            log.info("requestURI = {}", requestURI);
+            if (StringUtils.hasText(jwt) && tokenProviderImpl.validateToken(jwt)) {
+                Authentication authentication = tokenProviderImpl.getAuthentication(jwt);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        } else {
-            log.info("유효한 JWT 토큰이 없습니다, uri = {}", requestURI);
+                log.info("authentication.getName() = {}", authentication.getName());
+                log.info("requestURI = {}", requestURI);
+
+            } else {
+                log.info("유효한 JWT 토큰이 없습니다, uri = {}", requestURI);
+                return ;
+            }
+
         }
 
         filterChain.doFilter(servletRequest, servletResponse);
@@ -65,6 +74,10 @@ public class JwtFilter extends GenericFilterBean {
         }
 
         return null;
+    }
+
+    private boolean isLoginCheckPath(String requestURI) {
+        return !PatternMatchUtils.simpleMatch(whitelist, requestURI);
     }
 
 }
