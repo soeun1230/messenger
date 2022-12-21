@@ -22,7 +22,10 @@ public class JwtFilter extends GenericFilterBean {
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
-    private static final String[] whitelist = {"/", "/login", "/logout", "/favicon.ico", "/static/**", "/api/v1/register"};
+    private static final String[] whitelist = {"/login", "/logout",
+            "/favicon.ico", "/static/**", "/api/v1/register",
+            "/api/v1/login", "/"
+    };
 
     private TokenProviderImpl tokenProviderImpl;
     public JwtFilter(TokenProviderImpl tokenProviderImpl) {
@@ -35,17 +38,20 @@ public class JwtFilter extends GenericFilterBean {
         String jwt = resolveToken(httpServletRequest);
         String requestURI = httpServletRequest.getRequestURI();
 
-        log.info("getUserPrincipal = {}", httpServletRequest.getUserPrincipal());
-        log.info("getRequestURL = {}", httpServletRequest.getRequestURL());
-        log.info("getRequestURI = {}", httpServletRequest.getRequestURI());
-        log.info("getAuthType = {}", httpServletRequest.getAuthType());
-        log.info("getContextPath = {}", httpServletRequest.getContextPath());
-        log.info("getCookies = {}", httpServletRequest.getCookies());
-        log.info("getContentType = {}", httpServletRequest.getContentType());
-
-        log.info("jwt = {}", jwt);
-
+        log.info("requestURI = {}", requestURI);
         if (isLoginCheckPath(requestURI)) {
+
+
+            log.info("getUserPrincipal = {}", httpServletRequest.getUserPrincipal());
+            log.info("getRequestURL = {}", httpServletRequest.getRequestURL());
+            log.info("getRequestURI = {}", httpServletRequest.getRequestURI());
+            log.info("getAuthType = {}", httpServletRequest.getAuthType());
+            log.info("getContextPath = {}", httpServletRequest.getContextPath());
+            log.info("getCookies = {}", httpServletRequest.getCookies());
+            log.info("getContentType = {}", httpServletRequest.getContentType());
+
+            log.info("jwt = {}", jwt);
+
 
             if (StringUtils.hasText(jwt) && tokenProviderImpl.validateToken(jwt)) {
                 Authentication authentication = tokenProviderImpl.getAuthentication(jwt);

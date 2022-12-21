@@ -3,9 +3,12 @@ package messenger.messenger.auth.oauth.domain.form;
 import lombok.Builder;
 import lombok.Data;
 import messenger.messenger.auth.oauth.domain.social.ProviderUser;
+import messenger.messenger.auth.user.domain.Users;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +25,7 @@ public class FormUser implements ProviderUser {
     private String provider;
     private List<? extends GrantedAuthority> authorities;
 
+    private Users users;
 
     @Override
     public String getId() {
@@ -55,6 +59,10 @@ public class FormUser implements ProviderUser {
 
     @Override
     public List<? extends GrantedAuthority> getAuthorities() {
+
+        List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+
         return authorities;
     }
 

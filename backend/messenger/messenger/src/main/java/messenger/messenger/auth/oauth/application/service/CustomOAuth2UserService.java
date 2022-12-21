@@ -1,4 +1,4 @@
-package messenger.messenger.auth.oauth.application;
+package messenger.messenger.auth.oauth.application.service;
 
 import lombok.extern.slf4j.Slf4j;
 import messenger.messenger.auth.oauth.application.converter.ProviderUserConverter;

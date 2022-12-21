@@ -2,12 +2,12 @@ package messenger.messenger.auth.user.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import messenger.messenger.auth.user.domain.Authorities;
 import messenger.messenger.auth.user.domain.Authority;
 import messenger.messenger.auth.user.infra.AuthorityRepository;
 import messenger.messenger.auth.user.infra.UserRepository;
 import messenger.messenger.auth.oauth.domain.social.ProviderUser;
 import messenger.messenger.auth.user.domain.Users;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,21 +59,26 @@ public class UserService {
     }
 
     @Transactional
-    public void registerForm(FormUserDto formUserDto) {
+    public boolean registerForm(FormRegisterUserDto formRegisterUserDto, PasswordEncoder passwordEncoder) {
 
-        Users findUser = userRepository.findByEmail(formUserDto.getEmail());
+        Users findUser = userRepository.findByEmail(formRegisterUserDto.getEmail());
 
-//        if ( findUser == null)  {
-//            userRepository.save(
-//                    Users.builder()
-//                            .registrationId(registrationId)
-//                            .registerId(providerUser.getId())
-//                            .password(providerUser.getPassword())
-//                            .email(providerUser.getEmail())
-//                            .picture(providerUser.getPicture())
-//                            .build()
-//            )
-//        }
+        log.info("findUser = {}", findUser);
 
+        if (findUser == null)  {
+            userRepository.save(
+                    Users.builder()
+                            .username(formRegisterUserDto.getUsername())
+                            .password(passwordEncoder.encode(formRegisterUserDto.getPassword()))
+                            .email(formRegisterUserDto.getEmail())
+                            .build()
+            );
+            return true;
+        }
+        else {
+            return false;
+        }
     }
+
+
 }

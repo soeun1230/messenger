@@ -55,7 +55,8 @@ public class Users extends BaseEntity {
 
     @Builder
     public Users(String password, String registrationId, String registerId,
-                 String email, String picture, String refreshToken) {
+                 String email, String picture, String username) {
+        this.username = username;
         this.password = password;
         this.registrationId = registrationId;
         this.registerId = registerId;
