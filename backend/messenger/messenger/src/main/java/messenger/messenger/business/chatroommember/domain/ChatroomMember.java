@@ -4,7 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import messenger.messenger.business.common.BaseEntity;
+<<<<<<< HEAD
 import messenger.messenger.business.user.domain.Users;
+=======
+import messenger.messenger.auth.user.domain.Users;
+>>>>>>> 6989d4f78e3b521ac6460cc073e4094fd9ff1c50
 
 import javax.persistence.*;
 
