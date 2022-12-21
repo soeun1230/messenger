@@ -5,7 +5,7 @@ import messenger.messenger.auth.oauth.domain.social.ProviderUser;
 import messenger.messenger.auth.oauth.infra.common.enums.SocialType;
 import messenger.messenger.auth.oauth.infra.common.util.OAuth2Utils;
 
-public class OAuth2GoogleProviderUserConverter implements ProviderUserConverter<ProviderUserRequest, ProviderUser> {
+public final class OAuth2GoogleProviderUserConverter implements ProviderUserConverter<ProviderUserRequest, ProviderUser> {
     @Override
     public ProviderUser converter(ProviderUserRequest providerUserRequest) {
 

@@ -1,6 +1,6 @@
-package messenger.messenger.auth.oauth.application;
+package messenger.messenger.auth.oauth.application.service;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import messenger.messenger.auth.oauth.application.converter.ProviderUserConverter;
 import messenger.messenger.auth.oauth.application.converter.ProviderUserRequest;
 import messenger.messenger.auth.oauth.domain.PrincipalUser;
@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class CustomUserDetailsService extends AbstractOAuth2UserService implements UserDetailsService {
 
 
@@ -29,8 +30,14 @@ public class CustomUserDetailsService extends AbstractOAuth2UserService implemen
             throw new UsernameNotFoundException("존재하지 않는 회원입니다.");
         }
 
+        log.info("userDetails = {}", user);
+
         ProviderUserRequest providerUserRequest = new ProviderUserRequest(user);
         ProviderUser providerUser = providerUser(providerUserRequest);
+
+        log.info("providerUser.getEmail = {}", providerUser.getEmail());
+        log.info("providerUser.getPassword = {}", providerUser.getPassword());
+        log.info("providerUser.getAuthorities = {}", providerUser.getAuthorities());
 
         return new PrincipalUser(providerUser);
 

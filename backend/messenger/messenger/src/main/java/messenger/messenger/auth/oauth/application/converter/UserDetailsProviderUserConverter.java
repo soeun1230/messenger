@@ -1,10 +1,16 @@
 package messenger.messenger.auth.oauth.application.converter;
 
+import lombok.extern.slf4j.Slf4j;
 import messenger.messenger.auth.oauth.domain.form.FormUser;
 import messenger.messenger.auth.oauth.domain.social.ProviderUser;
 import messenger.messenger.auth.user.domain.Users;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-public class UserDetailsProviderUserConverter implements ProviderUserConverter<ProviderUserRequest, ProviderUser> {
+import java.util.stream.Collectors;
+
+
+@Slf4j
+public final class UserDetailsProviderUserConverter implements ProviderUserConverter<ProviderUserRequest, ProviderUser> {
 
     @Override
     public ProviderUser converter(ProviderUserRequest providerUserRequest) {

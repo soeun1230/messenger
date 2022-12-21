@@ -1,4 +1,4 @@
-package messenger.messenger.auth.oauth.application;
+package messenger.messenger.auth.oauth.application.service;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +38,7 @@ public abstract class AbstractOAuth2UserService {
         }
 
     }
+
 
     public ProviderUser providerUser(ProviderUserRequest providerUserRequest) {
         return providerUserConverter.converter(providerUserRequest);

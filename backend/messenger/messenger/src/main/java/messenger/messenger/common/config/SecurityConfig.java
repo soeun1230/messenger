@@ -1,13 +1,14 @@
 package messenger.messenger.common.config;
 
 import lombok.RequiredArgsConstructor;
-import messenger.messenger.auth.oauth.application.CustomOAuth2UserService;
-import messenger.messenger.auth.oauth.application.CustomOidcUserService;
-import messenger.messenger.auth.oauth.application.CustomUserDetailsService;
+import messenger.messenger.auth.oauth.application.service.CustomOAuth2UserService;
+import messenger.messenger.auth.oauth.application.service.CustomOidcUserService;
+import messenger.messenger.auth.oauth.application.service.CustomUserDetailsService;
 import messenger.messenger.auth.token.domain.TokenProviderImpl;
-import messenger.messenger.auth.token.presentation.handler.JwtAccessDeniedHandler;
-import messenger.messenger.auth.token.presentation.handler.JwtAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -15,11 +16,13 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.CorsFilter;
 
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -48,7 +51,7 @@ public class SecurityConfig {
                 .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
 
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER)
-
+//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .headers()
                 .frameOptions()
@@ -56,19 +59,24 @@ public class SecurityConfig {
 
                 .and()
                 .authorizeRequests((requests) -> requests
-                .antMatchers("/", "/resources/**", "/api/v1/register")
+                .antMatchers("/resources/**", "/api/v1/register", "/api/v1/login", "/")
                 .permitAll()
                 .anyRequest().authenticated())
 
-                .formLogin().loginPage("/api/v1/login").loginProcessingUrl("/loginProc").permitAll()
+                .formLogin().loginProcessingUrl("/api/v1/login")
+                .usernameParameter("email")
+                .passwordParameter("password")
+                .defaultSuccessUrl("/")
+                .permitAll()
                 .and()
+//                .formLogin().disable()
                 .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(
                         userInfoEndpointConfig -> userInfoEndpointConfig
                                 .userService(customOAuth2UserService)
                                 .oidcUserService(customOidcUserService)
                 ))
                 .userDetailsService(customUserDetailsService)
-                .exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
+                .exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/api/v1/login"))
 
                 .and()
                 .apply(new JwtSecurityConfig(tokenProviderImpl));
@@ -81,6 +89,8 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
+
+
 
 }
 
