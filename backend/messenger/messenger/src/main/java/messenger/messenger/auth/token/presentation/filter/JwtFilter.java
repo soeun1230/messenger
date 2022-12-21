@@ -22,7 +22,7 @@ public class JwtFilter extends GenericFilterBean {
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
-    private static final String[] whitelist = {"/", "/login", "/logout", "/favicon.ico", "/static/**"};
+    private static final String[] whitelist = {"/", "/login", "/logout", "/favicon.ico", "/static/**", "/api/v1/register"};
 
     private TokenProviderImpl tokenProviderImpl;
     public JwtFilter(TokenProviderImpl tokenProviderImpl) {

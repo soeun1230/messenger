@@ -1,37 +1,56 @@
-package messenger.messenger.auth.token.presentation.controller;
+package messenger.messenger.auth.user.presentation;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import messenger.messenger.auth.oauth.domain.PrincipalUser;
+import messenger.messenger.auth.oauth.domain.form.FormUser;
 import messenger.messenger.auth.token.application.TokenProviderService;
 import messenger.messenger.auth.token.domain.TokenProviderImpl;
+import messenger.messenger.auth.user.application.FormUserDto;
 import messenger.messenger.auth.user.application.UserService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 @RestController
 @Slf4j
+@CrossOrigin("http://localhost:3000")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
-public class TokenController {
+public class UserController {
 
     private final UserService userService;
 
     private final TokenProviderImpl tokenProviderImpl;
     private final TokenProviderService tokenProviderService;
 
+    @PostMapping("/register")
+    public ResponseEntity registerForm(@Valid @RequestBody FormUserDto formUserDto,
+                                       BindingResult bindingResult) {
 
-    @CrossOrigin("http://localhost:3000")
+        if (bindingResult.hasErrors()) {
+            log.info("bad Request");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        log.info("Request OK");
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+
+
+//    @CrossOrigin("http://localhost:3000")
     @GetMapping("/")
     public ResponseEntity login(@AuthenticationPrincipal PrincipalUser principalUser,
                                 Authentication authentication,

@@ -1,7 +1,8 @@
 package messenger.messenger.auth.oauth.application;
 
 import lombok.extern.slf4j.Slf4j;
-import messenger.messenger.auth.oauth.application.certification.SelfCertification;
+import messenger.messenger.auth.oauth.application.converter.ProviderUserConverter;
+import messenger.messenger.auth.oauth.application.converter.ProviderUserRequest;
 import messenger.messenger.auth.oauth.domain.PrincipalUser;
 import messenger.messenger.auth.oauth.domain.social.ProviderUser;
 import messenger.messenger.auth.user.application.UserService;
@@ -19,10 +20,11 @@ import org.springframework.stereotype.Service;
 public class CustomOAuth2UserService extends AbstractOAuth2UserService implements
         OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
-    public CustomOAuth2UserService(UserRepository userRepository, UserService userService, SelfCertification certification) {
-        super(userRepository, userService, certification);
+    public CustomOAuth2UserService(UserRepository userRepository, UserService userService,
+                                   ProviderUserConverter<ProviderUserRequest, ProviderUser> providerUserConverter) {
+        super(userRepository, userService, providerUserConverter);
     }
-    
+
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 
@@ -30,9 +32,10 @@ public class CustomOAuth2UserService extends AbstractOAuth2UserService implement
         OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService = new DefaultOAuth2UserService();
         OAuth2User oAuth2User = oAuth2UserService.loadUser(userRequest);
 
-        ProviderUser providerUser = super.providerUser(clientRegistration, oAuth2User);
+        ProviderUserRequest providerUserRequest = new ProviderUserRequest(clientRegistration, oAuth2User);
 
-        selfCertificate(providerUser);
+        ProviderUser providerUser = super.providerUser(providerUserRequest);
+
         super.register(providerUser, userRequest);
 
         return new PrincipalUser(providerUser);

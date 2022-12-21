@@ -1,7 +1,8 @@
 package messenger.messenger.auth.oauth.application;
 
 
-import messenger.messenger.auth.oauth.application.certification.SelfCertification;
+import messenger.messenger.auth.oauth.application.converter.ProviderUserConverter;
+import messenger.messenger.auth.oauth.application.converter.ProviderUserRequest;
 import messenger.messenger.auth.oauth.domain.PrincipalUser;
 import messenger.messenger.auth.oauth.domain.social.ProviderUser;
 import messenger.messenger.auth.user.application.UserService;
@@ -18,10 +19,9 @@ import org.springframework.stereotype.Service;
 public class CustomOidcUserService extends AbstractOAuth2UserService implements
         OAuth2UserService<OidcUserRequest, OidcUser>{
 
-    public CustomOidcUserService(UserRepository userRepository,
-                                 UserService userService,
-                                 SelfCertification certification) {
-        super(userRepository, userService, certification);
+    public CustomOidcUserService(UserRepository userRepository, UserService userService, ProviderUserConverter<ProviderUserRequest,
+            ProviderUser> providerUserConverter) {
+        super(userRepository, userService, providerUserConverter);
     }
 
     @Override
@@ -39,9 +39,9 @@ public class CustomOidcUserService extends AbstractOAuth2UserService implements
         OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService = new OidcUserService();
         OidcUser oidcUser = oidcUserService.loadUser(oidcUserRequest);
 
-        ProviderUser providerUser = super.providerUser(clientRegistration,oidcUser);
+        ProviderUserRequest providerUserRequest = new ProviderUserRequest(clientRegistration, oidcUser);
 
-        selfCertificate(providerUser);
+        ProviderUser providerUser = super.providerUser(providerUserRequest);
 
         super.register(providerUser, oidcUserRequest);
 
