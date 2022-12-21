@@ -1,24 +1,24 @@
 package messenger.messenger.auth.oauth.application;
 
-import messenger.messenger.auth.oauth.application.certification.SelfCertification;
+import lombok.RequiredArgsConstructor;
+import messenger.messenger.auth.oauth.application.converter.ProviderUserConverter;
+import messenger.messenger.auth.oauth.application.converter.ProviderUserRequest;
+import messenger.messenger.auth.oauth.domain.PrincipalUser;
+import messenger.messenger.auth.oauth.domain.social.ProviderUser;
 import messenger.messenger.auth.user.application.UserService;
 import messenger.messenger.auth.user.domain.Users;
 import messenger.messenger.auth.user.infra.UserRepository;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CustomUserDetailsService extends AbstractOAuth2UserService implements UserDetailsService {
 
-    private final PasswordEncoder passwordEncoder;
 
-    public CustomUserDetailsService(UserRepository userRepository, UserService userService, SelfCertification certification, PasswordEncoder passwordEncoder) {
-        super(userRepository, userService, certification);
-        this.passwordEncoder = passwordEncoder;
+    public CustomUserDetailsService(UserRepository userRepository, UserService userService, ProviderUserConverter<ProviderUserRequest, ProviderUser> providerUserConverter) {
+        super(userRepository, userService, providerUserConverter);
     }
 
     @Override
@@ -29,16 +29,14 @@ public class CustomUserDetailsService extends AbstractOAuth2UserService implemen
             throw new UsernameNotFoundException("존재하지 않는 회원입니다.");
         }
 
-        return createUserDetails(user);
+        ProviderUserRequest providerUserRequest = new ProviderUserRequest(user);
+        ProviderUser providerUser = providerUser(providerUserRequest);
+
+        return new PrincipalUser(providerUser);
+
     }
 
-    private UserDetails createUserDetails(Users loginUser) {
-        return User.builder()
-                .username(loginUser.getUsername())
-                .password(passwordEncoder.encode(loginUser.getPassword()))
-                .roles("ROLE_USER")
-                .build();
-    }
+
 
 }
 

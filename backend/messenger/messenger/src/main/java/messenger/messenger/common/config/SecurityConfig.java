@@ -3,6 +3,7 @@ package messenger.messenger.common.config;
 import lombok.RequiredArgsConstructor;
 import messenger.messenger.auth.oauth.application.CustomOAuth2UserService;
 import messenger.messenger.auth.oauth.application.CustomOidcUserService;
+import messenger.messenger.auth.oauth.application.CustomUserDetailsService;
 import messenger.messenger.auth.token.domain.TokenProviderImpl;
 import messenger.messenger.auth.token.presentation.handler.JwtAccessDeniedHandler;
 import messenger.messenger.auth.token.presentation.handler.JwtAuthenticationEntryPoint;
@@ -14,6 +15,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.CorsFilter;
 
@@ -22,11 +24,9 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomUserDetailsService customUserDetailsService;
     private final CustomOidcUserService customOidcUserService;
-    private final TokenProviderImpl tokenProviderImpl;
     private final CorsFilter corsFilter;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -37,11 +37,6 @@ public class SecurityConfig {
         );
     }
 
-//    @Bean
-//    JwtAuthenticationFilter jwtAuthenticationFilter(TokenProviderImpl jwtProvider) {
-//        return new JwtAuthenticationFilter(jwtProvider);
-//    }
-
     @Bean
     SecurityFilterChain oauth2SecurityFilterChain(HttpSecurity http,
                                                   TokenProviderImpl tokenProviderImpl) throws Exception {
@@ -50,9 +45,7 @@ public class SecurityConfig {
                 .httpBasic().disable()
                 .csrf().disable()
 
-                // add
                 .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
-                //
 
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER)
 
@@ -63,18 +56,22 @@ public class SecurityConfig {
 
                 .and()
                 .authorizeRequests((requests) -> requests
-                .antMatchers("/", "/resources/**")
+                .antMatchers("/", "/resources/**", "/api/v1/register")
                 .permitAll()
                 .anyRequest().authenticated())
 
+                .formLogin().loginPage("/api/v1/login").loginProcessingUrl("/loginProc").permitAll()
+                .and()
                 .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(
                         userInfoEndpointConfig -> userInfoEndpointConfig
-                        .userService(customOAuth2UserService)
-                        .oidcUserService(customOidcUserService)))
+                                .userService(customOAuth2UserService)
+                                .oidcUserService(customOidcUserService)
+                ))
+                .userDetailsService(customUserDetailsService)
+                .exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
 
+                .and()
                 .apply(new JwtSecurityConfig(tokenProviderImpl));
-//                .addFilterBefore(jwtAuthenticationFilter(tokenProvider),
-//                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
 

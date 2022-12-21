@@ -57,4 +57,23 @@ public class UserService {
         );
 
     }
+
+    @Transactional
+    public void registerForm(FormUserDto formUserDto) {
+
+        Users findUser = userRepository.findByEmail(formUserDto.getEmail());
+
+//        if ( findUser == null)  {
+//            userRepository.save(
+//                    Users.builder()
+//                            .registrationId(registrationId)
+//                            .registerId(providerUser.getId())
+//                            .password(providerUser.getPassword())
+//                            .email(providerUser.getEmail())
+//                            .picture(providerUser.getPicture())
+//                            .build()
+//            )
+//        }
+
+    }
 }
