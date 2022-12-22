@@ -21,7 +21,6 @@ public class FormUser implements ProviderUser {
     private String username;
     private String password;
     private String email;
-    private boolean isCertificated;
     private String provider;
     private List<? extends GrantedAuthority> authorities;
 
@@ -74,16 +73,6 @@ public class FormUser implements ProviderUser {
     @Override
     public OAuth2User getOAuth2User() {
         return null;
-    }
-
-    @Override
-    public boolean isCertificated() {
-        return isCertificated;
-    }
-
-    @Override
-    public void isCertificated(boolean isCertificated) {
-        this.isCertificated = isCertificated;
     }
 
 }

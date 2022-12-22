@@ -2,23 +2,22 @@ package messenger.messenger.auth.token.presentation.filter;
 
 import lombok.extern.slf4j.Slf4j;
 import messenger.messenger.auth.token.domain.TokenProviderImpl;
+import org.hibernate.annotations.Filter;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.util.PatternMatchUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
-@Component
-public class JwtFilter extends GenericFilterBean {
+public class JwtFilter extends OncePerRequestFilter {
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
@@ -27,28 +26,18 @@ public class JwtFilter extends GenericFilterBean {
             "/api/v1/login", "/"
     };
 
-    private TokenProviderImpl tokenProviderImpl;
+    private final TokenProviderImpl tokenProviderImpl;
     public JwtFilter(TokenProviderImpl tokenProviderImpl) {
         this.tokenProviderImpl = tokenProviderImpl;
     }
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-        String jwt = resolveToken(httpServletRequest);
-        String requestURI = httpServletRequest.getRequestURI();
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        log.info("requestURI = {}", requestURI);
+        String jwt = resolveToken(request);
+        String requestURI = request.getRequestURI();
+
         if (isLoginCheckPath(requestURI)) {
-
-
-            log.info("getUserPrincipal = {}", httpServletRequest.getUserPrincipal());
-            log.info("getRequestURL = {}", httpServletRequest.getRequestURL());
-            log.info("getRequestURI = {}", httpServletRequest.getRequestURI());
-            log.info("getAuthType = {}", httpServletRequest.getAuthType());
-            log.info("getContextPath = {}", httpServletRequest.getContextPath());
-            log.info("getCookies = {}", httpServletRequest.getCookies());
-            log.info("getContentType = {}", httpServletRequest.getContentType());
 
             log.info("jwt = {}", jwt);
 
@@ -56,9 +45,7 @@ public class JwtFilter extends GenericFilterBean {
             if (StringUtils.hasText(jwt) && tokenProviderImpl.validateToken(jwt)) {
                 Authentication authentication = tokenProviderImpl.getAuthentication(jwt);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-
                 log.info("authentication.getName() = {}", authentication.getName());
-                log.info("requestURI = {}", requestURI);
 
             } else {
                 log.info("유효한 JWT 토큰이 없습니다, uri = {}", requestURI);
@@ -67,7 +54,8 @@ public class JwtFilter extends GenericFilterBean {
 
         }
 
-        filterChain.doFilter(servletRequest, servletResponse);
+        filterChain.doFilter(request, response);
+
     }
 
     private String resolveToken(HttpServletRequest request) {

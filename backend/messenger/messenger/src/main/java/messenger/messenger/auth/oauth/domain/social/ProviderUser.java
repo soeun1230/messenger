@@ -17,7 +17,5 @@ public interface ProviderUser {
     List<? extends GrantedAuthority> getAuthorities();
     Map<String, Object> getAttributes();
     OAuth2User getOAuth2User();
-    boolean isCertificated();
-    void isCertificated(boolean isCertificated);
 
 }

@@ -2,11 +2,13 @@ package messenger.messenger.auth.user.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import messenger.messenger.auth.user.application.dto.FormRegisterUserDto;
 import messenger.messenger.auth.user.domain.Authority;
 import messenger.messenger.auth.user.infra.AuthorityRepository;
 import messenger.messenger.auth.user.infra.UserRepository;
 import messenger.messenger.auth.oauth.domain.social.ProviderUser;
 import messenger.messenger.auth.user.domain.Users;
+import messenger.messenger.auth.user.presentation.dto.LoginDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +32,7 @@ public class UserService {
         return saveUsers.getId();
     }
 
-    private Users findOne(Long id) throws IllegalAccessException {
+    public Users findOne(Long id) throws IllegalAccessException {
         Optional<Users> optionalUser = userRepository.findById(id);
 
         Users users = optionalUser.orElseThrow(() -> {
@@ -66,13 +68,17 @@ public class UserService {
         log.info("findUser = {}", findUser);
 
         if (findUser == null)  {
-            userRepository.save(
-                    Users.builder()
-                            .username(formRegisterUserDto.getUsername())
-                            .password(passwordEncoder.encode(formRegisterUserDto.getPassword()))
-                            .email(formRegisterUserDto.getEmail())
-                            .build()
-            );
+
+            Users user = Users.builder()
+                    .username(formRegisterUserDto.getUsername())
+                    .password(passwordEncoder.encode(formRegisterUserDto.getPassword()))
+                    .email(formRegisterUserDto.getEmail())
+                    .build();
+
+            userRepository.save(user);
+
+            authorityRepository.save(Authority.builder().user(user).authorities(ROLE_USER).build());
+
             return true;
         }
         else {
@@ -80,5 +86,24 @@ public class UserService {
         }
     }
 
+    public Users userLoginCheck(LoginDto loginDto, PasswordEncoder passwordEncoder) {
+        return userCheck(loginDto, passwordEncoder);
+    }
 
+
+    private Users userCheck(LoginDto loginDto, PasswordEncoder passwordEncoder) {
+
+        Users findUser = findByEmail(loginDto.getEmail());
+        log.info("findUser = {}", findUser);
+
+        if (findUser == null || !passwordEncoder.matches(loginDto.getPassword(), findUser.getPassword())) {
+            return null;
+        }
+
+        return findUser;
+    }
+
+    public Users findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
 }

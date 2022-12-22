@@ -50,14 +50,5 @@ public abstract class OAuth2ProviderUser implements ProviderUser {
                         .collect(Collectors.toList());
     }
 
-    @Override
-    public void isCertificated(boolean isCertificated) {
-        this.isCertificated = isCertificated;
-    }
-
-    @Override
-    public boolean isCertificated() {
-        return isCertificated;
-    }
 
 }

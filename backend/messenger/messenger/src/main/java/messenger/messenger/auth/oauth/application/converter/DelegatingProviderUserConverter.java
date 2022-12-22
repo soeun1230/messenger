@@ -17,7 +17,6 @@ public final class DelegatingProviderUserConverter implements ProviderUserConver
     public DelegatingProviderUserConverter() {
 
         List<ProviderUserConverter<ProviderUserRequest, ProviderUser>> converters = Arrays.asList(
-                new UserDetailsProviderUserConverter(),
                 new OAuth2GoogleProviderUserConverter(),
                 new OAuth2NaverProviderUserConverter(),
                 new OAuth2KakaoProviderUserConverter(),

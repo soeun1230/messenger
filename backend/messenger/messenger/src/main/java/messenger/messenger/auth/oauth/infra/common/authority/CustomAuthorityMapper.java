@@ -1,5 +1,6 @@
 package messenger.messenger.auth.oauth.infra.common.authority;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
@@ -7,6 +8,8 @@ import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMap
 import java.util.Collection;
 import java.util.HashSet;
 
+
+@Slf4j
 public class CustomAuthorityMapper implements GrantedAuthoritiesMapper {
 
     private final String PREFIX = "ROLE_";
@@ -16,6 +19,7 @@ public class CustomAuthorityMapper implements GrantedAuthoritiesMapper {
         HashSet<GrantedAuthority> mapped = new HashSet<>(authorities.size());
 
         for (GrantedAuthority authority : authorities) {
+            log.info("authority = {}", authority);
             mapped.add(mapAuthority(authority.getAuthority()));
         }
 

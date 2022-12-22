@@ -4,6 +4,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import messenger.messenger.auth.user.domain.Authority;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,9 +15,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -69,12 +68,39 @@ public class TokenProviderImpl implements InitializingBean, TokenProvider{
                 .compact();
     }
 
+    public String createTokenFormLogin(String email, List<Authority> authorities, long tokenTime) {
+
+        List<String> roles = getRoles(authorities);
+
+        Claims claims = Jwts.claims().setSubject(email);
+        claims.put(AUTHORITIES_KEY, roles);
+
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + tokenTime);
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate) // set Expire Time
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+
     public String createRefreshToken(Authentication authentication) {
         return createToken(authentication, refreshTokenExpirationTime);
     }
 
     public String createAccessToken(Authentication authentication) {
         return createToken(authentication, accessTokenExpirationTime);
+    }
+
+    public String createAccessToken(String email, List<Authority> roles) {
+        return createTokenFormLogin(email, roles, accessTokenExpirationTime);
+    }
+
+    public String createRefreshToken(String email, List<Authority> roles) {
+        return createTokenFormLogin(email, roles, refreshTokenExpirationTime);
     }
 
 
@@ -140,4 +166,17 @@ public class TokenProviderImpl implements InitializingBean, TokenProvider{
     public String removeType(String token) {
         return token.substring(TOKEN_TYPE.length());
     }
+
+    private List<String> getRoles (List<Authority> authorities) {
+
+        List<String> roles = new ArrayList<>();
+
+        for (Authority role : authorities) {
+            roles.add(role.getAuthorities().getAuthoritiesName());
+        }
+
+        return roles;
+    }
+
+
 }

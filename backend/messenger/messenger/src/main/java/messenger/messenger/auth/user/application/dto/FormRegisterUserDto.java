@@ -1,4 +1,4 @@
-package messenger.messenger.auth.user.application;
+package messenger.messenger.auth.user.application.dto;
 
 import lombok.Builder;
 import lombok.Data;

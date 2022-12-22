@@ -4,9 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import messenger.messenger.auth.oauth.domain.form.FormUser;
 import messenger.messenger.auth.oauth.domain.social.ProviderUser;
 import messenger.messenger.auth.user.domain.Users;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import java.util.stream.Collectors;
 
 
 @Slf4j
