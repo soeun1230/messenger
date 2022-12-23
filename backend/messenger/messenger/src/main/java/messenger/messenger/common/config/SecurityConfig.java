@@ -3,12 +3,10 @@ package messenger.messenger.common.config;
 import lombok.RequiredArgsConstructor;
 import messenger.messenger.auth.oauth.application.service.CustomOAuth2UserService;
 import messenger.messenger.auth.oauth.application.service.CustomOidcUserService;
-import messenger.messenger.auth.oauth.application.service.CustomUserDetailsService;
 import messenger.messenger.auth.token.domain.TokenProviderImpl;
+import messenger.messenger.auth.token.infra.repository.TokenRepositoryImpl;
 import messenger.messenger.auth.token.presentation.filter.JwtFilter;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,7 +15,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.CorsFilter;
 
@@ -30,6 +27,7 @@ public class SecurityConfig {
     private final CustomOidcUserService customOidcUserService;
     private final CorsFilter corsFilter;
     private final TokenProviderImpl tokenProviderImpl;
+    private final TokenRepositoryImpl tokenRepository;
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -58,8 +56,12 @@ public class SecurityConfig {
 
                 .and()
                 .authorizeRequests((requests) -> requests
-                .antMatchers("/resources/**", "/api/v1/register",
-                        "/api/v1/login", "/")
+                .antMatchers(
+                        "/resources/**",
+                        "/api/v1/register",
+                        "/api/v1/login",
+                        "/"
+                )
                 .permitAll()
                 .anyRequest().authenticated())
 //
@@ -96,7 +98,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtFilter jwtFilter() {
-        return new JwtFilter(tokenProviderImpl);
+        return new JwtFilter(tokenProviderImpl, tokenRepository);
     }
 
 }

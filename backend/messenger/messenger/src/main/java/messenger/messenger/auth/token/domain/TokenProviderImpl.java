@@ -13,6 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.security.Key;
 import java.util.*;
@@ -50,25 +51,23 @@ public class TokenProviderImpl implements InitializingBean, TokenProvider{
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String createToken(Authentication authentication, long tokenTime) {
-
-        String authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
-
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + tokenTime);
-
-        return Jwts.builder()
-                .setSubject(authentication.getName())
-                .setIssuedAt(now)
-                .claim(AUTHORITIES_KEY, authorities)
-                .signWith(key, SignatureAlgorithm.HS512)
-                .setExpiration(expiryDate)
-                .compact();
+    public String createRefreshToken(Authentication authentication) {
+        return createToken(authentication, refreshTokenExpirationTime);
     }
 
-    public String createTokenFormLogin(String email, List<Authority> authorities, long tokenTime) {
+    public String createAccessToken(Authentication authentication) {
+        return createToken(authentication, accessTokenExpirationTime);
+    }
+
+    public String createAccessToken(String email, List<Authority> roles) {
+        return createTokenFormLogin(email, roles, accessTokenExpirationTime);
+    }
+
+    public String createRefreshToken(String email, List<Authority> roles) {
+        return createTokenFormLogin(email, roles, refreshTokenExpirationTime);
+    }
+
+    private String createTokenFormLogin(String email, List<Authority> authorities, long tokenTime) {
 
         List<String> roles = getRoles(authorities);
 
@@ -86,21 +85,22 @@ public class TokenProviderImpl implements InitializingBean, TokenProvider{
                 .compact();
     }
 
+    private String createToken(Authentication authentication, long tokenTime) {
 
-    public String createRefreshToken(Authentication authentication) {
-        return createToken(authentication, refreshTokenExpirationTime);
-    }
+        String authorities = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
 
-    public String createAccessToken(Authentication authentication) {
-        return createToken(authentication, accessTokenExpirationTime);
-    }
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + tokenTime);
 
-    public String createAccessToken(String email, List<Authority> roles) {
-        return createTokenFormLogin(email, roles, accessTokenExpirationTime);
-    }
-
-    public String createRefreshToken(String email, List<Authority> roles) {
-        return createTokenFormLogin(email, roles, refreshTokenExpirationTime);
+        return Jwts.builder()
+                .setSubject(authentication.getName())
+                .setIssuedAt(now)
+                .claim(AUTHORITIES_KEY, authorities)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .setExpiration(expiryDate)
+                .compact();
     }
 
 
@@ -122,20 +122,18 @@ public class TokenProviderImpl implements InitializingBean, TokenProvider{
 
     public Claims getClaims(String token) {
 
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build().parseClaimsJws(token)
-                .getBody();
-    }
-
-
-    public Authentication getAuthentication(String token) {
-        Claims claims = Jwts
+        return Jwts
                 .parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+
+    public Authentication getAuthentication(String token) {
+
+        Claims claims = getClaims(token);
 
         Collection<? extends GrantedAuthority> authorities =
                 Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
@@ -164,19 +162,34 @@ public class TokenProviderImpl implements InitializingBean, TokenProvider{
     }
 
     public String removeType(String token) {
+
+        if (token == null || token.length() < TOKEN_TYPE.length()) {
+            return null;
+        }
+
         return token.substring(TOKEN_TYPE.length());
     }
 
     private List<String> getRoles (List<Authority> authorities) {
 
         List<String> roles = new ArrayList<>();
-
-        for (Authority role : authorities) {
-            roles.add(role.getAuthorities().getAuthoritiesName());
-        }
-
+        authorities.forEach(role -> roles.add(role.getAuthorities().getAuthoritiesName()));
         return roles;
     }
 
+
+    public Long getRemainTime(String token) {
+
+        Claims claims = getClaims(token);
+
+        log.info("claims = {}", claims);
+        log.info("getExpiration = {}", claims.getExpiration());
+
+        if (claims == null || claims.getExpiration() == null) {
+            return null;
+        }
+
+        return claims.getExpiration().getTime();
+    }
 
 }

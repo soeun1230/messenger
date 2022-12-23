@@ -1,6 +1,9 @@
 package messenger.messenger.auth.token.domain;
 
+import messenger.messenger.auth.user.domain.Authority;
 import org.springframework.security.core.Authentication;
+
+import java.util.List;
 
 public interface TokenProvider {
 

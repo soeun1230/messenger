@@ -1,9 +1,9 @@
 package messenger.messenger.auth.token.presentation.filter;
 
+import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import messenger.messenger.auth.token.domain.TokenProviderImpl;
-import org.hibernate.annotations.Filter;
-import org.springframework.context.annotation.ComponentScan;
+import messenger.messenger.auth.token.infra.repository.TokenRepositoryImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.PatternMatchUtils;
@@ -21,14 +21,21 @@ public class JwtFilter extends OncePerRequestFilter {
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
-    private static final String[] whitelist = {"/login", "/logout",
-            "/favicon.ico", "/static/**", "/api/v1/register",
-            "/api/v1/login", "/"
+    private static final String[] whitelist = {
+            "/",
+            "/static/**",
+            "/favicon.ico",
+            "/api/v1/login",
+            "/api/v1/register"
     };
 
     private final TokenProviderImpl tokenProviderImpl;
-    public JwtFilter(TokenProviderImpl tokenProviderImpl) {
+    private final TokenRepositoryImpl tokenRepository;
+
+    public JwtFilter(TokenProviderImpl tokenProviderImpl, TokenRepositoryImpl tokenRepository) {
         this.tokenProviderImpl = tokenProviderImpl;
+
+        this.tokenRepository = tokenRepository;
     }
 
     @Override
@@ -41,9 +48,16 @@ public class JwtFilter extends OncePerRequestFilter {
 
             log.info("jwt = {}", jwt);
 
+            if (
+                    StringUtils.hasText(jwt)
+                    && tokenProviderImpl.validateToken(jwt)
+                    && isNotLogoutAccessToken(jwt)
+            ) {
+                Claims claims = tokenProviderImpl.getClaims(jwt);
+                log.info("claims.getExpiration() = " + claims.getExpiration());
 
-            if (StringUtils.hasText(jwt) && tokenProviderImpl.validateToken(jwt)) {
                 Authentication authentication = tokenProviderImpl.getAuthentication(jwt);
+
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.info("authentication.getName() = {}", authentication.getName());
 
@@ -72,6 +86,18 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private boolean isLoginCheckPath(String requestURI) {
         return !PatternMatchUtils.simpleMatch(whitelist, requestURI);
+    }
+
+
+    /**
+     *
+     * token이 Logout한 AccessToken이라면 , false 출력
+     *
+     * @param token
+     * @return
+     */
+    private boolean isNotLogoutAccessToken(String token) {
+        return !tokenRepository.existsLogoutAccessTokenById(token);
     }
 
 }

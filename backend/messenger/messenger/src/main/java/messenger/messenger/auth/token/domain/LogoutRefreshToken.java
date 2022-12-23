@@ -1,8 +1,10 @@
 package messenger.messenger.auth.token.domain;
 
+import lombok.Getter;
 import org.springframework.data.redis.core.RedisHash;
 
-@RedisHash("logoutRefreshToken")
+@Getter
+@RedisHash(value = "logoutRefreshToken")
 public class LogoutRefreshToken extends Token {
 
     public LogoutRefreshToken(String id, long expiration) {

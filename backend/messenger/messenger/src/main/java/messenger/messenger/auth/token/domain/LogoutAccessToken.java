@@ -1,9 +1,12 @@
 package messenger.messenger.auth.token.domain;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisHash;
 
-@RedisHash("logoutAccessToken")
+@Getter
+@RedisHash(value = "logoutAccessToken")
 @NoArgsConstructor
 public class LogoutAccessToken extends Token{
 
@@ -14,4 +17,5 @@ public class LogoutAccessToken extends Token{
     public static LogoutAccessToken of (String accessToken, long expiration) {
         return new LogoutAccessToken(accessToken, expiration);
     }
+
 }

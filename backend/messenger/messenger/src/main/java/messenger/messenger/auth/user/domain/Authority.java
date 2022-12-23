@@ -17,6 +17,7 @@ import static javax.persistence.FetchType.LAZY;
 public class Authority {
 
     @Id @GeneratedValue
+    @Column(name = "authority_id")
     private Long id;
 
     @ManyToOne(fetch = LAZY)

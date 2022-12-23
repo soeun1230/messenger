@@ -8,7 +8,7 @@ import messenger.messenger.auth.user.infra.AuthorityRepository;
 import messenger.messenger.auth.user.infra.UserRepository;
 import messenger.messenger.auth.oauth.domain.social.ProviderUser;
 import messenger.messenger.auth.user.domain.Users;
-import messenger.messenger.auth.user.presentation.dto.LoginDto;
+import messenger.messenger.auth.token.presentation.dto.LoginDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

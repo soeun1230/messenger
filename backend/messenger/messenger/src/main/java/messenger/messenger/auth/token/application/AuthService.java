@@ -1,53 +1,143 @@
 package messenger.messenger.auth.token.application;
 
 import lombok.RequiredArgsConstructor;
-import messenger.messenger.auth.token.application.dto.AuthResponseDto;
+import lombok.extern.slf4j.Slf4j;
 import messenger.messenger.auth.token.domain.*;
+import messenger.messenger.auth.token.infra.repository.RefreshTokenRedisRepository;
 import messenger.messenger.auth.token.infra.repository.TokenRepository;
+import messenger.messenger.auth.user.domain.Authority;
+import messenger.messenger.auth.token.presentation.dto.TokenAuthDto;
 import messenger.messenger.common.exception.NotExistsRefreshTokenException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
+@Slf4j
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class AuthService {
 
+    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
     private final TokenProviderImpl tokenProviderImpl;
     private final TokenRepository tokenRepository;
 
+
+    /**
+     *
+     * controller에서 검증 후
+     * Id/password 이메일 방식에 대한 토큰 발급
+     *
+     * @param email
+     * @param authorities
+     * @return
+     */
+    @Transactional
+    public TokenAuthDto createFormTokenAuth(String email, List<Authority> authorities) {
+
+        String accessToken = tokenProviderImpl.createAccessToken(email, authorities);
+        String refreshToken = createFormNewRefreshToken(email, authorities);
+
+        log.info("accessToken = {}", accessToken);
+        log.info("refreshToken = {}", refreshToken);
+
+        return new TokenAuthDto(accessToken, refreshToken);
+    }
+
+    /**
+     *
+     * controller에서 검증 후
+     * oAuth2 이메일 방식에 대한 토큰 발급
+     *
+     * @param authentication
+     * @return
+     */
+    @Transactional
+    public TokenAuthDto createOauthTokenAuth(Authentication authentication) {
+
+        String accessToken = tokenProviderImpl.createAccessToken(authentication);
+        String newRefreshToken = createOauth2NewRefreshToken(authentication);
+
+        log.info("accessToken = {}", accessToken);
+        log.info("refreshToken = {}", newRefreshToken);
+
+        return new TokenAuthDto(accessToken, newRefreshToken);
+    }
+
+
+
+    /**
+     *
+     * 회원 로그 아웃
+     * 회원의 남아 있는 accessToken, refreshToken을 redis에 저장하여
+     * 해당 요청은 인증이 되지 않도록 로직 구성
+     *
+     * @param accessToken
+     * @param refreshToken
+     */
     public void logout(String accessToken, String refreshToken) {
+
+        accessToken = removeType(accessToken);
+
+        if (accessToken == null) {
+            return ;
+        }
         saveLogoutAccessToken(accessToken);
         saveLogoutRefreshToken(refreshToken);
     }
 
-    public AuthResponseDto reissue (String refreshToken) {
-        refreshToken = tokenProviderImpl.removeType(refreshToken);
+    /**
+     *
+     * 회원 토큰 재발급
+     * 회원의 토큰 재발급 요청이 발생하면,
+     * 기존에 존재하는 accessToken 재발급
+     * 기존에 존재하는 accessToken remain time > refresh remain time,
+     * refreshToken까지 재발급
+     *
+     * @param refreshToken
+     * @return
+     */
+    public TokenAuthDto reissue (String refreshToken) {
         isInRedisOrThrow(refreshToken);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String newAccessToken = tokenProviderImpl.createAccessToken(authentication);
         if (tokenProviderImpl.isMoreThanReissueTime(refreshToken))
-            return AuthResponseDto.of(newAccessToken, refreshToken);
+            return TokenAuthDto.of(newAccessToken, refreshToken);
 
         deleteOriginRefreshToken(refreshToken);
-        String newRefreshToken = createNewRefreshToken(authentication);
-        return AuthResponseDto.of(newAccessToken, newRefreshToken);
+        String newRefreshToken = createOauth2NewRefreshToken(authentication);
+        return TokenAuthDto.of(newAccessToken, newRefreshToken);
     }
 
     /**
-     *
-     * 새로운 refreshToken을 생성하는 메소드
+     * Oauth2
+     * 새로운 refreshToken 생성
      *
      */
-    private String createNewRefreshToken(Authentication authentication) {
+    private String createOauth2NewRefreshToken(Authentication authentication) {
         String newRefreshToken = tokenProviderImpl.createRefreshToken(authentication);
         tokenRepository.saveRefreshToken(
                 RefreshToken.of(newRefreshToken, getRemainingTimeFromToken(newRefreshToken)));
 
         return newRefreshToken;
+    }
+
+    /**
+     * form
+     * 새로운 refreshToken 생성
+     *
+     */
+    private String createFormNewRefreshToken(String email, List<Authority> authorities) {
+
+        String refreshToken = tokenProviderImpl.createRefreshToken(email, authorities);
+        long remainingTimeFromToken = tokenProviderImpl.getRemainingTimeFromToken(refreshToken);
+        refreshTokenRedisRepository.save(RefreshToken.of(refreshToken, remainingTimeFromToken));
+
+        return refreshToken;
     }
 
 
@@ -76,9 +166,10 @@ public class AuthService {
      *
      */
     private void saveLogoutRefreshToken(String refreshToken) {
-        String removedTypeRefreshToken = getRemoveBearerType(refreshToken);
-        LogoutRefreshToken logoutRefreshToken = LogoutRefreshToken.of(removedTypeRefreshToken, getRemainingTimeFromToken(removedTypeRefreshToken));
-        tokenRepository.saveLogoutRefreshToken(logoutRefreshToken);
+        Long remainRefreshTokenTime = getRemainTime(refreshToken);
+        if (remainRefreshTokenTime != null) {
+            tokenRepository.saveLogoutRefreshToken(LogoutRefreshToken.of(refreshToken, remainRefreshTokenTime));
+        }
     }
 
     /**
@@ -88,13 +179,10 @@ public class AuthService {
      *
      */
     private void saveLogoutAccessToken(String accessToken) {
-        String removedTypeAccessToken = getRemoveBearerType(accessToken);
-        LogoutAccessToken logoutAccessToken = LogoutAccessToken.of(removedTypeAccessToken, getRemainingTimeFromToken(removedTypeAccessToken));
-        tokenRepository.saveLogoutAccessToken(logoutAccessToken);
-    }
-
-    private String getRemoveBearerType(String token) {
-        return token.substring(7);
+        Long remainAccessTokenTime = getRemainTime(accessToken);
+        if (remainAccessTokenTime != null) {
+            tokenRepository.saveLogoutAccessToken(LogoutAccessToken.of(accessToken, remainAccessTokenTime));
+        }
     }
 
 
@@ -107,5 +195,25 @@ public class AuthService {
         return tokenProviderImpl.getRemainingTimeFromToken(token);
     }
 
+
+    /**
+     *
+     * 남은 시간 체크
+     *
+     * @param token
+     * @return
+     */
+    private Long getRemainTime(String token) { return tokenProviderImpl.getRemainTime(token);}
+
+
+
+    /**
+     *
+     * "Bearer 제거 및 에러 null 처리"
+     *
+     * @param token
+     * @return
+     */
+    private String removeType (String token) {return tokenProviderImpl.removeType(token);}
 
 }
