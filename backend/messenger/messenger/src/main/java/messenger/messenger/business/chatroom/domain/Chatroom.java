@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import messenger.messenger.business.common.BaseEntity;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import messenger.messenger.business.user.domain.Users;
 
 import javax.persistence.*;
@@ -12,11 +13,16 @@ import javax.persistence.*;
 import java.io.File;
 
 =======
+=======
+>>>>>>> origin/backend
 import messenger.messenger.auth.user.domain.Users;
 
 import javax.persistence.*;
 
+<<<<<<< HEAD
 >>>>>>> 6989d4f78e3b521ac6460cc073e4094fd9ff1c50
+=======
+>>>>>>> origin/backend
 import static javax.persistence.FetchType.LAZY;
 
 @Entity
