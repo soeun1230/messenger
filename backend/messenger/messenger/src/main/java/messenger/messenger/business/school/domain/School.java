@@ -1,6 +1,7 @@
 package messenger.messenger.business.school.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import messenger.messenger.business.common.BaseEntity;
@@ -23,4 +24,11 @@ public class School extends BaseEntity {
     private String schoolName;
     private String schoolAddress;
     private String schoolRegistrationNum;
+
+    @Builder
+    public School(String schoolName, String schoolAddress, String schoolRegistrationNum) {
+        this.schoolName = schoolName;
+        this.schoolAddress = schoolAddress;
+        this.schoolRegistrationNum = schoolRegistrationNum;
+    }
 }
