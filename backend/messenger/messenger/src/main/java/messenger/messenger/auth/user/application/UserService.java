@@ -2,6 +2,7 @@ package messenger.messenger.auth.user.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import messenger.messenger.auth.token.presentation.exception.NotFoundUserException;
 import messenger.messenger.auth.user.application.dto.FormRegisterUserDto;
 import messenger.messenger.auth.user.domain.Authority;
 import messenger.messenger.auth.user.infra.AuthorityRepository;
@@ -9,6 +10,7 @@ import messenger.messenger.auth.user.infra.UserRepository;
 import messenger.messenger.auth.oauth.domain.social.ProviderUser;
 import messenger.messenger.auth.user.domain.Users;
 import messenger.messenger.auth.token.presentation.dto.LoginDto;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,14 +34,22 @@ public class UserService {
         return saveUsers.getId();
     }
 
-    public Users findOne(Long id) throws IllegalAccessException {
+    public Long getUserId(String email) {
+        Users users = userRepository.findByEmail(email);
+
+        if (users == null) {
+            throw new NotFoundUserException("존재하지 않는 유저입니다.");
+        }
+
+        return users.getId();
+    }
+
+    public Users findOne(Long id) {
         Optional<Users> optionalUser = userRepository.findById(id);
 
-        Users users = optionalUser.orElseThrow(() -> {
+        return optionalUser.orElseThrow(() -> {
             throw new IllegalArgumentException("존재하지 않는 유저 입니다.");
         });
-
-        return users;
     }
 
     @Transactional
@@ -91,6 +101,17 @@ public class UserService {
     }
 
 
+    /**
+     * 이메일로 유저 찾기
+     */
+    public Users findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+
+    /**
+     * 로그인 정보를 입력 받아 존재하는 회원인지 판단
+     */
     private Users userCheck(LoginDto loginDto, PasswordEncoder passwordEncoder) {
 
         Users findUser = findByEmail(loginDto.getEmail());
@@ -103,7 +124,9 @@ public class UserService {
         return findUser;
     }
 
-    public Users findByEmail(String email) {
-        return userRepository.findByEmail(email);
+
+    public Users findUserForAuthentication(Authentication authentication) {
+        return findByEmail(authentication.getName());
     }
+
 }

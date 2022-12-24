@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import messenger.messenger.auth.token.domain.*;
 import messenger.messenger.auth.token.infra.repository.RefreshTokenRedisRepository;
 import messenger.messenger.auth.token.infra.repository.TokenRepository;
+import messenger.messenger.auth.user.application.UserService;
 import messenger.messenger.auth.user.domain.Authority;
 import messenger.messenger.auth.token.presentation.dto.TokenAuthDto;
+import messenger.messenger.auth.user.domain.Users;
 import messenger.messenger.common.exception.NotExistsRefreshTokenException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,15 +27,11 @@ public class AuthService {
     private final TokenProviderImpl tokenProviderImpl;
     private final TokenRepository tokenRepository;
 
-
     /**
      *
      * controller에서 검증 후
      * Id/password 이메일 방식에 대한 토큰 발급
      *
-     * @param email
-     * @param authorities
-     * @return
      */
     @Transactional
     public TokenAuthDto createFormTokenAuth(String email, List<Authority> authorities) {
@@ -52,8 +50,6 @@ public class AuthService {
      * controller에서 검증 후
      * oAuth2 이메일 방식에 대한 토큰 발급
      *
-     * @param authentication
-     * @return
      */
     @Transactional
     public TokenAuthDto createOauthTokenAuth(Authentication authentication) {
@@ -75,8 +71,6 @@ public class AuthService {
      * 회원의 남아 있는 accessToken, refreshToken을 redis에 저장하여
      * 해당 요청은 인증이 되지 않도록 로직 구성
      *
-     * @param accessToken
-     * @param refreshToken
      */
     public void logout(String accessToken, String refreshToken) {
 
@@ -97,8 +91,6 @@ public class AuthService {
      * 기존에 존재하는 accessToken remain time > refresh remain time,
      * refreshToken까지 재발급
      *
-     * @param refreshToken
-     * @return
      */
     public TokenAuthDto reissue (String refreshToken) {
         isInRedisOrThrow(refreshToken);
@@ -113,10 +105,16 @@ public class AuthService {
         return TokenAuthDto.of(newAccessToken, newRefreshToken);
     }
 
+
+//    public Users getUsersFromToken(String token) {
+//        String email = getEmailFromToken(token);
+//
+//    }
+
+
     /**
      * Oauth2
      * 새로운 refreshToken 생성
-     *
      */
     private String createOauth2NewRefreshToken(Authentication authentication) {
         String newRefreshToken = tokenProviderImpl.createRefreshToken(authentication);
@@ -129,7 +127,6 @@ public class AuthService {
     /**
      * form
      * 새로운 refreshToken 생성
-     *
      */
     private String createFormNewRefreshToken(String email, List<Authority> authorities) {
 
@@ -142,9 +139,7 @@ public class AuthService {
 
 
     /**
-     *
      * 새로운 refreshToken이 생성되면, 이전에 사용한 원래 refreshToken을 제거
-     *
      */
     private void deleteOriginRefreshToken(String refreshToken) {
         tokenRepository.deleteRefreshTokenById(refreshToken);
@@ -160,10 +155,8 @@ public class AuthService {
     }
 
     /**
-     *
      * 로그 아웃시, refreshToken을 redis에 저장하여, 만료 시간 전까지,
      * refreshToken의 유효성을 저장하기 위한 메소드
-     *
      */
     private void saveLogoutRefreshToken(String refreshToken) {
         Long remainRefreshTokenTime = getRemainTime(refreshToken);
@@ -173,10 +166,8 @@ public class AuthService {
     }
 
     /**
-     *
      * 로그 아웃시, accessToken을 redis에 저장하여, 만료 시간 전까지,
      * accessToken의 유효성을 저장하기 위한 메소드
-     *
      */
     private void saveLogoutAccessToken(String accessToken) {
         Long remainAccessTokenTime = getRemainTime(accessToken);
@@ -187,9 +178,7 @@ public class AuthService {
 
 
     /**
-     *
      * 토큰 expiration 만료 시간 get method
-     *
      */
     private long getRemainingTimeFromToken(String token) {
         return tokenProviderImpl.getRemainingTimeFromToken(token);
@@ -197,22 +186,13 @@ public class AuthService {
 
 
     /**
-     *
      * 남은 시간 체크
-     *
-     * @param token
-     * @return
      */
     private Long getRemainTime(String token) { return tokenProviderImpl.getRemainTime(token);}
 
 
-
     /**
-     *
      * "Bearer 제거 및 에러 null 처리"
-     *
-     * @param token
-     * @return
      */
     private String removeType (String token) {return tokenProviderImpl.removeType(token);}
 

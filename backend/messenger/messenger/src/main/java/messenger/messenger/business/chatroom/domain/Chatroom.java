@@ -1,6 +1,7 @@
 package messenger.messenger.business.chatroom.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import messenger.messenger.business.common.BaseEntity;
@@ -29,4 +30,12 @@ public class Chatroom extends BaseEntity {
     private int maxMember;
 
     private String chatFilePath;
+
+    @Builder
+    public Chatroom(Users users, String chatroomName, int maxMember, String chatFilePath) {
+        this.users = users;
+        this.chatroomName = chatroomName;
+        this.maxMember = maxMember;
+        this.chatFilePath = chatFilePath;
+    }
 }

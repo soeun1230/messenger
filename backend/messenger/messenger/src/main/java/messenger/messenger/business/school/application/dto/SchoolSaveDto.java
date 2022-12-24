@@ -24,5 +24,6 @@ public class SchoolSaveDto {
         this.schoolName = schoolName;
         this.schoolAddress = schoolAddress;
         this.schoolRegistrationNum = schoolRegistrationNum;
+
     }
 }
