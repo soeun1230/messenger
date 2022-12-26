@@ -1,59 +1,44 @@
 package messenger.messenger.business.school.presentation;
 
 import com.google.gson.Gson;
-import com.querydsl.jpa.impl.JPAQuery;
 import messenger.messenger.auth.token.application.AuthService;
 import messenger.messenger.auth.token.presentation.dto.TokenAuthDto;
 import messenger.messenger.auth.user.application.AuthorityService;
 import messenger.messenger.auth.user.application.UserService;
 import messenger.messenger.auth.user.application.dto.FormRegisterUserDto;
-import messenger.messenger.auth.user.domain.Authorities;
 import messenger.messenger.auth.user.domain.Authority;
 import messenger.messenger.auth.user.domain.Users;
 import messenger.messenger.business.school.application.SchoolService;
 import messenger.messenger.business.school.application.dto.SchoolSaveDto;
 import messenger.messenger.business.school.application.dto.SchoolSearchReqDto;
-import messenger.messenger.business.school.infra.repository.SchoolRepository;
 import messenger.messenger.business.school.infra.repository.query.dto.SchoolSearchDto;
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.filter.CharacterEncodingFilter;
 
-import javax.servlet.http.HttpServletRequest;
-import java.net.http.HttpRequest;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Transactional
 @ExtendWith(MockitoExtension.class)
 class SchoolControllerTest {
@@ -71,6 +56,7 @@ class SchoolControllerTest {
     static String accessToken;
     private MockMvc mockMvc;
 
+    @Autowired TestRestTemplate restTemplate;
 
     @BeforeEach
     public void dbInit() {
@@ -81,7 +67,10 @@ class SchoolControllerTest {
         tokenAuthDto = authService.createFormTokenAuth("k@naver.com", authorities);
         accessToken = "Bearer " + tokenAuthDto.getAccessToken();
 
-        mockMvc = MockMvcBuilders.standaloneSetup(schoolController).build();
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(schoolController)
+                .addFilter(new CharacterEncodingFilter("UTF-8", true))
+                .build();
 
         saveSchool();
 
@@ -106,7 +95,81 @@ class SchoolControllerTest {
         resultActions.andExpect(status().isOk());
 
     }
-    
+
+
+    @Test
+    public void 학교_저장() throws Exception {
+
+        //given
+        SchoolSaveDto saveDto = new SchoolSaveDto("서울c 학교", "<a ref='www.naver.com'>", "1233");
+
+        //when
+        ResultActions resultActions = mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/v1/schools/insert")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new Gson().toJson(saveDto))
+                        .characterEncoding("utf-8")
+                        .header("Authorization", accessToken)
+        );
+
+        //then
+        resultActions.andDo(print());
+        resultActions.andExpect(status().is2xxSuccessful());
+//                .andExpect(MockMvcResultMatchers.jsonPath("$[0].schoolAddress").value("<a ref='www.naver.com'>"));
+
+//        Assertions.assertThat(schoolService.findOne());
+
+    }
+
+    @Test
+    public void 학교_저장_rest() throws Exception {
+
+        //given
+        SchoolSaveDto saveDto = new SchoolSaveDto("서울c 학교", "<a ref='www.naver.com'>", "1233");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+
+        //when
+        ResultActions resultActions = mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/v1/schools/insert")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new Gson().toJson(saveDto))
+                        .characterEncoding("utf-8")
+                        .header("Authorization", accessToken)
+        );
+
+        //then
+        resultActions.andDo(print());
+        resultActions.andExpect(status().is2xxSuccessful());
+//                .andExpect(MockMvcResultMatchers.jsonPath("$[0].schoolAddress").value("<a ref='www.naver.com'>"));
+
+//        Assertions.assertThat(schoolService.findOne());
+
+    }
+
+
+    @Test
+    public void 학교_하나_검색() throws Exception {
+
+        //given
+        Long savedId = schoolService.save(new SchoolSaveDto("서울 D학교", "서울 D동", "12345"));
+
+        //when
+        ResultActions resultActions = mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/v1/schools/"+savedId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("utf-8")
+                        .header("Authorization", accessToken)
+        );
+
+        //then
+        resultActions.andDo(print());
+        resultActions.andExpect(status().is2xxSuccessful());
+
+    }
+
+
 
     private SchoolSearchReqDto requestDto() {
         return SchoolSearchReqDto.builder().page(0).size(10).schoolName("서울").build();
@@ -122,4 +185,5 @@ class SchoolControllerTest {
             schoolService.save(new SchoolSaveDto(school[i], address[i], regisNum[i]));
         }
     }
+
 }

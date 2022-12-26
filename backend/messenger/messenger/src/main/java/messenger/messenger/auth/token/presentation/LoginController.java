@@ -78,8 +78,7 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody LoginDto loginDto,
-                                BindingResult bindingResult) {
+    public ResponseEntity login(@RequestBody LoginDto loginDto, BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

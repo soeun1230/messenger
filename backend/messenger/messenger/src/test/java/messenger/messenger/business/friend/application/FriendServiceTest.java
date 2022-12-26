@@ -3,6 +3,7 @@ package messenger.messenger.business.friend.application;
 import messenger.messenger.auth.user.application.UserService;
 import messenger.messenger.auth.user.domain.Users;
 import messenger.messenger.auth.user.infra.UserRepository;
+import messenger.messenger.business.friend.infra.FriendRepository;
 import messenger.messenger.business.friend.presentation.dto.MyFriendSearchReqDto;
 import messenger.messenger.business.friend.presentation.dto.MyFriendsReqDto;
 import messenger.messenger.business.friend.infra.query.dto.MyFriendsDto;
@@ -26,6 +27,8 @@ class FriendServiceTest {
     static Users reqUser;
     static Users resUser;
     static Users resUser2;
+    @Autowired
+    private FriendRepository friendRepository;
 
     @Test
     public void 친구_저장_찾기() throws Exception {
@@ -45,7 +48,7 @@ class FriendServiceTest {
         Long saveId = friendService.save(reqUser, resUser);
 
         //when
-        friendService.deleteFriend(saveId);
+        friendService.deleteFriend(friendService.findOne(saveId));
 
         //then
         org.junit.jupiter.api.Assertions.assertThrows(

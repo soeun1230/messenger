@@ -1,11 +1,9 @@
 package messenger.messenger.business.school.infra.repository;
 
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import messenger.messenger.business.school.domain.QSchool;
 import messenger.messenger.business.school.infra.repository.query.condition.SchoolSearchCondition;
 import messenger.messenger.business.school.infra.repository.query.dto.QSchoolSearchDto;
 import messenger.messenger.business.school.infra.repository.query.dto.SchoolSearchDto;

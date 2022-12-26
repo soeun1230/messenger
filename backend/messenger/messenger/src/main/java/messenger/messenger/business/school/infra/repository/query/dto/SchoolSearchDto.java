@@ -1,10 +1,12 @@
 package messenger.messenger.business.school.infra.repository.query.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
+import org.springframework.data.redis.core.RedisHash;
 
 @Data
+@ToString
+@NoArgsConstructor
 public class SchoolSearchDto {
 
     private Long id;

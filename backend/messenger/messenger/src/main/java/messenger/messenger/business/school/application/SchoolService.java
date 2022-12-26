@@ -2,6 +2,7 @@ package messenger.messenger.business.school.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import messenger.messenger.business.common.RestPage;
 import messenger.messenger.business.school.application.dto.SchoolSaveDto;
 import messenger.messenger.business.school.application.dto.SchoolSearchReqDto;
 import messenger.messenger.business.school.domain.School;
@@ -9,6 +10,7 @@ import messenger.messenger.business.school.infra.repository.SchoolQueryRepositor
 import messenger.messenger.business.school.infra.repository.SchoolRepository;
 import messenger.messenger.business.school.infra.repository.query.condition.SchoolSearchCondition;
 import messenger.messenger.business.school.infra.repository.query.dto.SchoolSearchDto;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -55,18 +57,18 @@ public class SchoolService {
      * schoolSearchReqDto를 입력받아, name, address로 동적 쿼리 생성
      * schoolSearchReqDto의 page 관련 파라미터를 받아 pageable 생성
      *
-     * @param schoolSearchReqDto
+     * @param reqDto
      * @return
      */
-    public Page<SchoolSearchDto> getSchoolSearchDto(SchoolSearchReqDto schoolSearchReqDto) {
+    @Cacheable(value = "Page<SchoolSearchDto>", key = "#reqDto.schoolName.hashCode()", cacheManager = "cacheManager", unless = "#reqDto.schoolName.hashCode() == ''")
+    public Page<SchoolSearchDto> getSchoolSearchDto(SchoolSearchReqDto reqDto) {
 
-        SchoolSearchCondition condition = SchoolSearchCondition.of(schoolSearchReqDto.getSchoolName(), schoolSearchReqDto.getSchoolAddress());
-        Pageable pageable = PageRequest.of(schoolSearchReqDto.getPage(), schoolSearchReqDto.getSize(), Sort.by("id"));
-
-        return schoolQueryRepository.searchSchoolsPageComplex(condition, pageable);
+        SchoolSearchCondition condition = SchoolSearchCondition.of(reqDto.getSchoolName(), reqDto.getSchoolAddress());
+        Pageable pageable = PageRequest.of(reqDto.getPage(), reqDto.getSize(), Sort.by("id"));
+        return new RestPage<>(schoolQueryRepository.searchSchoolsPageComplex(condition, pageable));
+//        return schoolQueryRepository.searchSchoolsPageComplex(condition, pageable);
 
     }
-
 
 
 }

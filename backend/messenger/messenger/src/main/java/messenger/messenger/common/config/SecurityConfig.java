@@ -51,6 +51,10 @@ public class SecurityConfig {
 
                 .and()
                 .headers()
+                .xssProtection()
+                .and()
+                .contentSecurityPolicy("script-src 'self'")
+                .and()
                 .frameOptions()
                 .sameOrigin()
 
@@ -64,17 +68,6 @@ public class SecurityConfig {
                 )
                 .permitAll()
                 .anyRequest().authenticated())
-//
-//                .formLogin().loginProcessingUrl("/api/v1/login")
-//                .usernameParameter("email")
-//                .passwordParameter("password")
-//                .defaultSuccessUrl("/")
-//                .permitAll()
-//                .and()
-//                .userDetailsService(customUserDetailsService)
-//                .exceptionHandling()
-//                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/"))
-
 
                 .formLogin().disable()
 
@@ -85,6 +78,7 @@ public class SecurityConfig {
 
                 .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
+
 
         return http.build();
 

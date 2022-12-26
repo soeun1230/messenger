@@ -13,6 +13,7 @@ import messenger.messenger.business.friend.presentation.dto.MyFriendSearchReqDto
 import messenger.messenger.business.friend.presentation.dto.MyFriendsReqDto;
 import messenger.messenger.business.friend.presentation.dto.MyCrudFriendDto;
 import messenger.messenger.business.friend.infra.query.dto.MyFriendsDto;
+import messenger.messenger.business.friend.presentation.dto.MyResUserDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -101,7 +103,7 @@ class FriendControllerTest {
     public void 친구_저장() throws Exception {
         //given
         userService.registerForm(FormRegisterUserDto.builder().email("k4@naver.com").password("1234").username("k").build(), passwordEncoder);
-        MyCrudFriendDto reqDto = new MyCrudFriendDto(userService.findByEmail("k4@naver.com").getId());
+        MyResUserDto reqDto = new MyResUserDto(userService.findByEmail("k4@naver.com").getId());
 
         //when
         ResultActions result = mockMvc.perform(
@@ -119,7 +121,7 @@ class FriendControllerTest {
     @Test
     public void 친구_삭제() throws Exception {
         //given
-        MyCrudFriendDto reqDto = new MyCrudFriendDto(userService.findByEmail("k1@naver.com").getId());
+        MyResUserDto reqDto = new MyResUserDto(userService.findByEmail("k1@naver.com").getId());
 
         //when
         ResultActions result = mockMvc.perform(
@@ -154,7 +156,7 @@ class FriendControllerTest {
 
     private void saveFriends() {
 
-        String[] email = {"k1@naver.com", "k2@naver.com", "k2@naver.com"};
+        String[] email = {"k1@naver.com", "k2@naver.com", "k3@naver.com"};
         String[] username = {"kose1", "kose2", "kose3"};
         String[] password = {"1234", "1234", "1234"};
 

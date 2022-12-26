@@ -29,9 +29,17 @@ public class Friend extends BaseEntity {
     @JoinColumn(name = "res_user_id")
     private Users resUser;
 
+    @Enumerated(EnumType.STRING)
+    private JoinStatus joinStatus;
+
     @Builder
-    public Friend(Users reqUser, Users resUser) {
+    public Friend(Users reqUser, Users resUser, JoinStatus joinStatus) {
         this.reqUser = reqUser;
         this.resUser = resUser;
+        this.joinStatus = joinStatus;
+    }
+
+    public void updateJoinStatus(JoinStatus joinStatus) {
+        this.joinStatus = joinStatus;
     }
 }

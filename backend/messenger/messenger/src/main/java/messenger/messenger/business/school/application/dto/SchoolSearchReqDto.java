@@ -19,9 +19,4 @@ public class SchoolSearchReqDto extends BaseDefaultPageable {
         this.schoolAddress = schoolAddress;
     }
 
-
-
-
-
-
 }
