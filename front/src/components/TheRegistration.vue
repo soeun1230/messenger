@@ -47,7 +47,7 @@ export default {
       register(){ 
             this.clicked=true;
             fetch(
-                "https://localhost:44313/api/create/user",
+                "https://localhost:44313/api/v1/register",         //https://localhost:44313/api/create/user
                 {
                     method: "POST",
                     headers: {

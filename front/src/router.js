@@ -3,6 +3,7 @@ import TheHome from './components/TheHome.vue';
 import TheRegistration from './components/TheRegistration.vue';
 import TheLogin from './components/TheLogin.vue';
 import UserDash from './components/UserDash.vue';
+import GiftList from './components/GiftList.vue';
 
 const router=createRouter({
     history:createWebHashHistory(),
@@ -15,6 +16,8 @@ const router=createRouter({
         {path:"/login",component:TheLogin},
 
         {path:"/user",component:UserDash},
+
+        {path:"/gift",component:GiftList}
     ]
 })
 

@@ -9,7 +9,7 @@
 
   <div class="row  g-0 z bg-danger">
     <div class="col-3 all-user shadow-lg p-3">
-      <div class="text-center mb-2 p-0"><h3>친구 목록</h3></div>
+      <div class="text-center mb-2 p-0"><h3>친구 목록 <input type="submit" value="친구추가" @click="newfriend()" style="font-size: 10px;border-radius: 40%; border:1px solid green"></h3></div>
       <all-user
         v-for="result in results"
         :key="result.Id"
@@ -17,6 +17,7 @@
         :FirstName="result.FirstName"
         :LastName="result.LastName"
         :Email="result.Email"
+        :Password="result.Password"
         @convo="convo"
       >
       </all-user>
@@ -127,7 +128,7 @@ export default {
 
       //console.log("vvv"+ this.chatterName)
 
-      fetch("https://localhost:44313/api/create/messsage/user", {
+      fetch("https://localhost:44313/api/v1/chat/user", {               //메세지 보내기       //https://localhost:44313/api/create/messsage/user
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -153,7 +154,7 @@ export default {
         });
     },
     async loadUsers() {
-      await fetch("https://localhost:44313/api/all/user", {
+      await fetch("https://localhost:44313/api/v1/users/friends", {          //친구 불러오기 https://localhost:44313/api/all/user
         method: "GET",
       })
         .then((response) => {
@@ -222,6 +223,7 @@ export default {
             Id: data.Id,
             FirstName: data.FirstName,
             LastName: data.LastName,
+            Email: data.Email,
           });
         })
         .catch((error) => {
@@ -244,7 +246,7 @@ export default {
       this.Id1 = this.$store.getters["user/loggedUserId"];
       this.Id2 = this.$store.getters["user/getId2"];
       fetch(
-        `https://localhost:44313/api/all/coversation/${this.Id1}/${this.Id2}`,
+        `https://localhost:44313/api/all/coversation/${this.Id1}/${this.Id2}`,         //모든 채팅
         {
           method: "GET",
         }
@@ -289,7 +291,27 @@ export default {
     setInterval(this.allMessages, 2000);
     //setInterval(this.chatterName=this.$store.getters["user/getChatterName"], 1000);
   },
+  newfriend() {                        //새친구
+    fetch("https://localhost:44313/api/v1/friends/new", {
+          method: "POST",
+        }
+      )
+      .then((response) => {
+        if(response.ok) {
+          return response.json();
+        }
+      })
+      .then((data) => 
+            this.$store.dispatch("user/addUserDetail", {
+            Id: data.Id,
+            FirstName: data.FirstName,
+            LastName: data.LastName,
+            Email: data.Email,
+          })
+      )
+  }
 };
+
 </script>
 
 <style scoped>

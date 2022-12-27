@@ -3,11 +3,11 @@
 		<div class="login_box col-12 row">
 			<div class="left col-6">
 				<div class="top_link"><a href="#"><img src="https://drive.google.com/u/0/uc?id=16U__U5dJdaTfNGobB_OpwAJ73vM50rPV&export=download" alt="">Return home</a></div>
-    <form  @submit.prevent="login" action="">
+    <form  @submit.prevent="login" action="/user">        
         <input type="text" placeholder="email" v-model="Email"/>
         <br>
         <input type="password" placeholder="Password" v-model="Password"/>
-        <button type="submit" value="login">login</button>
+        <button type="submit" value="login" @click="LoginFuction()">login</button>
     </form>
     </div>
     </div>
@@ -21,22 +21,24 @@ export default {
           
           Email:"",
           loggedPersonMail:"",
+          Password:"",
+          loggedPassword:"",
           successful:false,
         }
     },
     methods:{
         async login(){ 
             this.clicked=true;
-           await fetch(
-                "https://localhost:44313/api/login/user",
+            await fetch(
+                "https://localhost:44313/api/v1/login",      //http://localhost:3000/#/user 로 바꾸기??  https://localhost:44313/api/login/user
                 {
                     method: "POST",
                     headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json",      
                     },
-                    body: JSON.stringify({
-                    Email: this.Email,
-                   
+                    body: JSON.stringify({        
+                    Email: this.Email,           
+                    Password: this.Password
                     
                     }),
                 
@@ -74,9 +76,12 @@ export default {
             .then((response)=>{
                 if(response.ok){
                     this.loggedPersonMail=  this.Email;
+                    this.loggedPassword= this.Password;
 
                     this.$store.dispatch('user/addLoggedUser',{
                     Email:this.loggedPersonMail,
+                    Password:this.loggedPassword,
+                    
                     });
 
                     this.$router.replace('/user')

@@ -34,7 +34,7 @@ export default {
     deleteChat(id) {
         //console.log(id)
 
-      fetch(`https://localhost:44313/api/delete/chat/${id}`, {
+      fetch(`https://localhost:44313/api/v1/chat?${id}`, {                    //https://localhost:44313/api/delete/chat/${id}
         method: "GET",
       }).then((response) => {
         if (response.ok) {

@@ -89,7 +89,7 @@ export default {
           alert()
           this.clicked=true;
            await fetch(
-                "https://localhost:44313/api/login/user",
+                "https://localhost:44313/api/v1/login",   //https://localhost:44313/api/login/user
                 {
                     method: "POST",
                     headers: {
