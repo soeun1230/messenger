@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-@RestController
 @Slf4j
-@RequestMapping("/api/v1/schools")
+@RestController
+@RequestMapping(path = "/api/v1/schools", produces = "application/json")
 @RequiredArgsConstructor
 public class SchoolController {
 

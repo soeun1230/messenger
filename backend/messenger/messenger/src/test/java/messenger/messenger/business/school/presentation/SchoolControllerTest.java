@@ -11,7 +11,9 @@ import messenger.messenger.auth.user.domain.Users;
 import messenger.messenger.business.school.application.SchoolService;
 import messenger.messenger.business.school.application.dto.SchoolSaveDto;
 import messenger.messenger.business.school.application.dto.SchoolSearchReqDto;
+import messenger.messenger.business.school.domain.School;
 import messenger.messenger.business.school.infra.repository.query.dto.SchoolSearchDto;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -20,8 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -30,8 +31,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
@@ -98,7 +101,7 @@ class SchoolControllerTest {
 
 
     @Test
-    public void 학교_저장() throws Exception {
+    public void 학교_저장2() throws Exception {
 
         //given
         SchoolSaveDto saveDto = new SchoolSaveDto("서울c 학교", "<a ref='www.naver.com'>", "1233");
@@ -122,29 +125,31 @@ class SchoolControllerTest {
     }
 
     @Test
-    public void 학교_저장_rest() throws Exception {
+    public void 학교_저장() throws Exception {
 
         //given
-        SchoolSaveDto saveDto = new SchoolSaveDto("서울c 학교", "<a ref='www.naver.com'>", "1233");
+        SchoolSaveDto saveDto = new SchoolSaveDto("서울c 학교", "<a ref='www.naver.com'> </a>", "1233");
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", accessToken);
 
+        HttpEntity<SchoolSaveDto> entity = new HttpEntity<>(saveDto, headers);
 
         //when
-        ResultActions resultActions = mockMvc.perform(
-                MockMvcRequestBuilders.post("/api/v1/schools/insert")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new Gson().toJson(saveDto))
-                        .characterEncoding("utf-8")
-                        .header("Authorization", accessToken)
-        );
+        ResponseEntity<Long> response = restTemplate
+                .exchange(
+                "/api/v1/schools/insert",
+                HttpMethod.POST,
+                entity,
+                Long.class);
+
+        School school = schoolService.findOne(response.getBody());
 
         //then
-        resultActions.andDo(print());
-        resultActions.andExpect(status().is2xxSuccessful());
-//                .andExpect(MockMvcResultMatchers.jsonPath("$[0].schoolAddress").value("<a ref='www.naver.com'>"));
-
-//        Assertions.assertThat(schoolService.findOne());
+        Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        Assertions.assertThat(school.getSchoolAddress()).isNotEqualTo("<a ref='www.naver.com'> </a>");
+        Assertions.assertThat(school.getSchoolAddress()).isEqualTo("&lt;a ref='www.naver.com'&gt; &lt;/a&gt;");
 
     }
 

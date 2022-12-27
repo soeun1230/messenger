@@ -6,11 +6,11 @@ import com.fasterxml.jackson.core.io.SerializedString;
 import org.apache.commons.text.StringEscapeUtils;
 
 
-public class HtmlCharacterEscapes extends CharacterEscapes {
+public class HtmlCharacterEscape extends CharacterEscapes {
 
     private final int[] asciiEscapes;
 
-    public HtmlCharacterEscapes() {
+    public HtmlCharacterEscape() {
         asciiEscapes = CharacterEscapes.standardAsciiEscapesForJSON();
         asciiEscapes['<'] = CharacterEscapes.ESCAPE_CUSTOM;
         asciiEscapes['>'] = CharacterEscapes.ESCAPE_CUSTOM;
